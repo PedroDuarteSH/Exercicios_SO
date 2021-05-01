@@ -1,0 +1,105 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define MAX 60		// game width
+#define SIZE 10 	// road width
+#define LINES 40 	// max game lines
+
+int * shared_pos;
+int shmid;
+int direction = 1;
+int left = 0;
+void road();
+void signals(int signum);
+void ignore_signals(int signum);
+
+int main() {
+        int pid;
+        struct sigaction act;
+
+        // Create shared memory for car position
+
+        /* TO COMPLETE - Create shared memory to save car position (an integer is enough) */
+
+	// initial car position
+        *shared_pos = SIZE/2;
+
+        // Create child to handle road
+        pid = fork();
+        if(pid == 0) {
+                road();
+                exit(0);
+        }
+
+        //*** Father ***//
+        // Handle signals
+
+        /* TO COMPLETE - handle SIGINT and SIGTSTP to control the car - only one function ("signals") will handle both signals */
+
+        // Wait for child
+
+        /* TO COMPLETE - Wait for child - if a signal is received while waiting, the wait must continue */
+
+        printf("Child finished!\n");
+
+        // Remove shared memory
+        shmdt(shared_pos);
+        shmctl(shmid,IPC_RMID,NULL);
+}
+
+void road() {
+        struct sigaction act;
+
+	// Ignore SIGINT and SIGTSTP
+	// Configuring sigaction
+
+        /* TO COMPLETE - Ignore SIGINT and SIGTSTP by using sigaction */
+
+        for(int i = 0; i < LINES; i++) {
+                if((*shared_pos) > left && (*shared_pos) < left+SIZE-1) {
+			printf("%*s>%*sV%*s<\n", left, "", (*shared_pos)-left-1,"",SIZE+left-2-(*shared_pos),"");
+			}
+		else {
+                        printf("%*cCRASH! GAME OVER!!!\n",left, ' ');
+                        exit(0);
+			}
+
+                if(direction == 1) {
+                        left++;
+                } else {
+                        left--;
+                }
+
+                if(left+SIZE >= MAX) {
+                        direction = 0;
+                } else if(left <= 0) {
+                        direction = 1;
+                } else {
+                        // Make random direction change
+                        if(rand()%10 == 0) {
+                                if(direction == 0)
+                                        direction = 1;
+                                else
+                                        direction = 0;
+                        }
+
+                }
+                usleep(500*1000);
+        }
+	printf("END OF ROAD! WELL DONE!!!\n");
+}
+
+void signals(int signum) {
+
+          /* TO COMPLETE - if SIGINT then increase the car position, if SIGTSTP decrease car position */
+
+        printf("\n");
+}
