@@ -26,9 +26,11 @@ int main() {
         struct sigaction act;
 
         // Create shared memory for car position
-
+        if((shmid = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0777)) == -1)
+                printf("Failed to get shared memory");
         /* TO COMPLETE - Create shared memory to save car position (an integer is enough) */
-
+        if((shared_pos = (int *) shmat(shmid, NULL, 0)) == -1)
+                printf("Failed to attach shared memory ");
 	// initial car position
         *shared_pos = SIZE/2;
 
@@ -41,13 +43,13 @@ int main() {
 
         //*** Father ***//
         // Handle signals
-
+        signal(SIGINT, signals); //Ctrl C
+        signal(SIGTSTP, signals); //Ctrl V
         /* TO COMPLETE - handle SIGINT and SIGTSTP to control the car - only one function ("signals") will handle both signals */
-
         // Wait for child
-
+        
         /* TO COMPLETE - Wait for child - if a signal is received while waiting, the wait must continue */
-
+        wait(NULL);
         printf("Child finished!\n");
 
         // Remove shared memory
@@ -60,7 +62,8 @@ void road() {
 
 	// Ignore SIGINT and SIGTSTP
 	// Configuring sigaction
-
+        signal(SIGINT,SIG_IGN);
+        signal(SIGTSTP,SIG_IGN);
         /* TO COMPLETE - Ignore SIGINT and SIGTSTP by using sigaction */
 
         for(int i = 0; i < LINES; i++) {
@@ -99,7 +102,11 @@ void road() {
 
 void signals(int signum) {
 
-          /* TO COMPLETE - if SIGINT then increase the car position, if SIGTSTP decrease car position */
+        /* TO COMPLETE - if SIGINT then increase the car position, if SIGTSTP decrease car position */
+        if(signum == SIGINT) (*shared_pos)++;
+
+        else (*shared_pos)--;
+
 
         printf("\n");
 }
