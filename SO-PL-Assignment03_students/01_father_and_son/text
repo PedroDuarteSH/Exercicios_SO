@@ -1,0 +1,4 @@
+1)
+	a) De cada vez que executamos, um processo diferente é iniciado, bem como os seus filhos, logo os numeros nao se vão manter.
+	b) Os processos são executados em simultaneo, logo, não existe ordem para essa execução
+	
